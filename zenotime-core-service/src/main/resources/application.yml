@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: zenotime-core-service
+  
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/zenotime}
+    username: ${SPRING_DATASOURCE_USERNAME:zenotime}
+    password: ${SPRING_DATASOURCE_PASSWORD:zenotime}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+  
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:admin}
+    password: ${SPRING_RABBITMQ_PASSWORD:admin}
+
+server:
+  port: 8080
+
+jwt:
+  secret: ${JWT_SECRET:zenotime-secret-key-for-jwt-token-generation-minimum-256-bits}
+  expiration: 86400000
+
+logging:
+  level:
+    com.zenotime: DEBUG
+    org.springframework.web: INFO
+

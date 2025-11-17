@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: zenotime-report-service
+  
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/zenotime}
+    username: ${SPRING_DATASOURCE_USERNAME:zenotime}
+    password: ${SPRING_DATASOURCE_PASSWORD:zenotime}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:admin}
+    password: ${SPRING_RABBITMQ_PASSWORD:admin}
+
+server:
+  port: 8081
+
+report:
+  csv:
+    output-dir: /app/reports
+    daily-schedule: "0 0 1 * * ?"
+
+logging:
+  level:
+    com.zenotime: INFO
+
