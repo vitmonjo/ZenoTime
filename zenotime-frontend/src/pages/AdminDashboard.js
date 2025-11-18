@@ -6,6 +6,8 @@ import {
   Card,
   CardContent,
   Paper,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import {
   LineChart,
@@ -28,41 +30,68 @@ import api from '../services/api';
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const AdminDashboard = () => {
-  const [dashboardData, setDashboardData] = useState({
-    totalHoras: 0,
-    funcionariosAtivos: 0,
-    projetosAtivos: 0,
-    produtividade: [],
-    distribuicaoHoras: [],
-    comparativoTimes: [],
-  });
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Simular dados do dashboard
-    setDashboardData({
-      totalHoras: 1240,
-      funcionariosAtivos: 25,
-      projetosAtivos: 8,
-      produtividade: [
-        { name: 'Seg', horas: 240 },
-        { name: 'Ter', horas: 280 },
-        { name: 'Qua', horas: 260 },
-        { name: 'Qui', horas: 300 },
-        { name: 'Sex', horas: 220 },
-      ],
-      distribuicaoHoras: [
-        { name: 'Projeto A', value: 400 },
-        { name: 'Projeto B', value: 300 },
-        { name: 'Projeto C', value: 200 },
-        { name: 'Projeto D', value: 100 },
-      ],
-      comparativoTimes: [
-        { name: 'Time 1', horas: 320 },
-        { name: 'Time 2', horas: 280 },
-        { name: 'Time 3', horas: 240 },
-      ],
-    });
+    carregarDadosDashboard();
   }, []);
+
+  const carregarDadosDashboard = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/dashboard');
+      setDashboardData(response.data);
+      setError(null);
+    } catch (error) {
+      console.error('Erro ao carregar dados do dashboard:', error);
+      setError('Erro ao carregar dados do dashboard');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Layout>
+        <Container maxWidth="lg">
+          <Grid container justifyContent="center" sx={{ mt: 4 }}>
+            <CircularProgress />
+          </Grid>
+        </Container>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <Container maxWidth="lg">
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {error}
+          </Alert>
+        </Container>
+      </Layout>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <Layout>
+        <Container maxWidth="lg">
+          <Alert severity="info" sx={{ mt: 2 }}>
+            Nenhum dado disponível
+          </Alert>
+        </Container>
+      </Layout>
+    );
+  }
+
+  // Preparar dados para os gráficos
+  const produtividadeData = dashboardData.produtividadeSemanal || [];
+  const distribuicaoData = dashboardData.distribuicaoHoras || [];
+  const comparativoData = dashboardData.comparativoTimes || [];
 
   return (
     <Layout>
@@ -77,7 +106,7 @@ const AdminDashboard = () => {
                 <Typography color="textSecondary" gutterBottom>
                   Total de Horas (Mês)
                 </Typography>
-                <Typography variant="h4">{dashboardData.totalHoras}h</Typography>
+                <Typography variant="h4">{dashboardData.totalHoras || 0}h</Typography>
               </CardContent>
             </Card>
           </Grid>
@@ -87,7 +116,7 @@ const AdminDashboard = () => {
                 <Typography color="textSecondary" gutterBottom>
                   Funcionários Ativos
                 </Typography>
-                <Typography variant="h4">{dashboardData.funcionariosAtivos}</Typography>
+                <Typography variant="h4">{dashboardData.funcionariosAtivos || 0}</Typography>
               </CardContent>
             </Card>
           </Grid>
@@ -97,7 +126,7 @@ const AdminDashboard = () => {
                 <Typography color="textSecondary" gutterBottom>
                   Projetos em Andamento
                 </Typography>
-                <Typography variant="h4">{dashboardData.projetosAtivos}</Typography>
+                <Typography variant="h4">{dashboardData.projetosAtivos || 0}</Typography>
               </CardContent>
             </Card>
           </Grid>
@@ -107,7 +136,9 @@ const AdminDashboard = () => {
                 <Typography color="textSecondary" gutterBottom>
                   Média Diária
                 </Typography>
-                <Typography variant="h4">248h</Typography>
+                <Typography variant="h4">
+                  {dashboardData.mediaDiaria ? Math.round(dashboardData.mediaDiaria) : 0}h
+                </Typography>
               </CardContent>
             </Card>
           </Grid>
@@ -117,9 +148,9 @@ const AdminDashboard = () => {
                 Produtividade Semanal
               </Typography>
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={dashboardData.produtividade}>
+                <LineChart data={produtividadeData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
+                  <XAxis dataKey="dia" />
                   <YAxis />
                   <Tooltip />
                   <Legend />
@@ -133,25 +164,31 @@ const AdminDashboard = () => {
               <Typography variant="h6" gutterBottom>
                 Distribuição de Horas por Projeto
               </Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={dashboardData.distribuicaoHoras}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {dashboardData.distribuicaoHoras.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+              {distribuicaoData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={distribuicaoData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ projeto, percentual }) => `${projeto} ${percentual?.toFixed(0) || 0}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="horas"
+                    >
+                      {distribuicaoData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <Typography variant="body2" color="textSecondary" sx={{ mt: 4, textAlign: 'center' }}>
+                  Nenhum dado disponível
+                </Typography>
+              )}
             </Paper>
           </Grid>
           <Grid item xs={12}>
@@ -159,16 +196,22 @@ const AdminDashboard = () => {
               <Typography variant="h6" gutterBottom>
                 Comparativo de Produtividade entre Times
               </Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={dashboardData.comparativoTimes}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="horas" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
+              {comparativoData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={comparativoData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="time" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="horas" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <Typography variant="body2" color="textSecondary" sx={{ mt: 4, textAlign: 'center' }}>
+                  Nenhum dado disponível
+                </Typography>
+              )}
             </Paper>
           </Grid>
         </Grid>

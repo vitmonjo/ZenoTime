@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mysql:
     image: mysql:8.0
@@ -99,6 +97,8 @@ services:
       - "3000:80"
     depends_on:
       - core-service
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080/api
     restart: unless-stopped
 
 volumes:

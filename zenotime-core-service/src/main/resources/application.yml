@@ -27,7 +27,7 @@ server:
   port: 8080
 
 jwt:
-  secret: ${JWT_SECRET:zenotime-secret-key-for-jwt-token-generation-minimum-256-bits}
+  secret: ${JWT_SECRET:zenotime-secret-key-for-jwt-token-generation-minimum-256-bits-required-for-hs256-algorithm}
   expiration: 86400000
 
 logging:

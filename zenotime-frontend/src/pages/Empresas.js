@@ -38,6 +38,14 @@ const Empresas = () => {
       setEmpresas(response.data);
     } catch (error) {
       console.error('Erro ao carregar empresas:', error);
+      if (error.response) {
+        console.error('Status:', error.response.status);
+        console.error('Data:', error.response.data);
+      } else if (error.request) {
+        console.error('Request:', error.request);
+      } else {
+        console.error('Error:', error.message);
+      }
     }
   };
 

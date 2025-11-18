@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+// A URL da API sempre será localhost:8080 porque o navegador roda no host,
+// não dentro do container Docker
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8080/api',
   headers: {
