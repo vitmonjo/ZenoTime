@@ -358,9 +358,9 @@ Cada serviço Spring Boot segue a arquitetura em camadas:
 
 Este projeto foi desenvolvido como trabalho acadêmico.
 
-## 👥 Autor
+## 👥 Integrantes
 
-Desenvolvido individualmente como trabalho final do curso.
+- **João Vítor Monteiro** (Desenvolvimento individual)
 
 ---
 
