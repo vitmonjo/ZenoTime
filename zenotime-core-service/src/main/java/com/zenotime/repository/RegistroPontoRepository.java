@@ -12,10 +12,11 @@ import java.util.List;
 @Repository
 public interface RegistroPontoRepository extends JpaRepository<RegistroPonto, Long> {
     List<RegistroPonto> findByFuncionarioId(Long funcionarioId);
+    List<RegistroPonto> findByFuncionarioIdOrderByDataHoraEntradaDesc(Long funcionarioId);
     List<RegistroPonto> findByFuncionarioIdAndDataHoraEntradaBetween(
         Long funcionarioId, LocalDateTime inicio, LocalDateTime fim);
     List<RegistroPonto> findByProjetoId(Long projetoId);
-    
+
     @Query("SELECT r FROM RegistroPonto r WHERE r.funcionario.id = :funcionarioId " +
            "AND r.dataHoraEntrada >= :inicio AND r.dataHoraEntrada < :fim")
     List<RegistroPonto> findRegistrosPorPeriodo(

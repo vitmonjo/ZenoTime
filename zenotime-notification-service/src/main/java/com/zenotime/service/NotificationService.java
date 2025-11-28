@@ -9,8 +9,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class NotificationService {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
+
+    public NotificationService() {
+        logger.info("NotificationService inicializado - listeners configurados");
+    }
     
     @RabbitListener(queues = "solicitacao.criada")
     public void processarSolicitacaoCriada(SolicitacaoCriadaMessage message) {

@@ -33,9 +33,9 @@ const Layout = ({ children }) => {
   const location = useLocation();
 
   const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     ...(user?.tipo === 'ADMINISTRADOR'
       ? [
+          { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
           { text: 'Empresas', icon: <BusinessIcon />, path: '/empresas' },
           { text: 'Projetos', icon: <FolderIcon />, path: '/projetos' },
           { text: 'Times', icon: <GroupIcon />, path: '/times' },

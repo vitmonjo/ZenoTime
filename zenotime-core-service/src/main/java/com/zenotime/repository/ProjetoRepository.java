@@ -10,5 +10,6 @@ import java.util.List;
 public interface ProjetoRepository extends JpaRepository<Projeto, Long> {
     List<Projeto> findByEmpresaId(Long empresaId);
     List<Projeto> findByAtivoTrue();
+    Projeto findByNomeAndEmpresa_Id(String nome, Long empresaId);
 }
 

@@ -41,7 +41,7 @@ public class DataInitializer implements CommandLineRunner {
     
     @Autowired
     private FuncionarioEmpresaRepository funcionarioEmpresaRepository;
-    
+
     @Autowired
     private PasswordEncoder passwordEncoder;
     
@@ -50,25 +50,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        // Criar administrador
-        criarAdministrador();
-        
-        // Criar empresas e estrutura
-        List<Empresa> empresas = criarEmpresas();
-        
-        // Criar funcionários
-        List<Usuario> funcionarios = criarFuncionarios(empresas);
-        
-        // Criar projetos, times e sprints para cada empresa
-        criarProjetosTimesESprints(empresas);
-        
-        // Criar registros de ponto (setembro, outubro, novembro 2025)
-        criarRegistrosPonto(funcionarios);
-        
-        // Criar solicitações
-        criarSolicitacoes(funcionarios);
-        
-        System.out.println("Dados de teste criados com sucesso!");
+        System.out.println("DataInitializer executado!");
     }
     
     private void criarAdministrador() {
@@ -127,6 +109,8 @@ public class DataInitializer implements CommandLineRunner {
         }
         
         FuncionarioData[] funcionariosData = {
+            // Funcionário especial para demonstração no vídeo
+            new FuncionarioData("João Vítor Monteiro", "funcionario@zenotime.com", 0),
             new FuncionarioData("João Silva", "joao.silva@techsolutions.com", 0),
             new FuncionarioData("Maria Santos", "maria.santos@techsolutions.com", 0),
             new FuncionarioData("Pedro Oliveira", "pedro.oliveira@healthcare.com", 1),
@@ -168,7 +152,8 @@ public class DataInitializer implements CommandLineRunner {
                 funcionarioEmpresa.setEmpresa(empresa);
                 funcionarioEmpresa.setDataInicio(LocalDate.now().minusMonths(3));
                 funcionarioEmpresaRepository.save(funcionarioEmpresa);
-                
+
+
                 funcionarios.add(funcionario);
             } else {
                 funcionarios.add(usuarioRepository.findByEmail(data.email).get());
@@ -178,198 +163,40 @@ public class DataInitializer implements CommandLineRunner {
     }
     
     private void criarProjetosTimesESprints(List<Empresa> empresas) {
-        String[][][] projetosPorEmpresa = {
-            // TechSolutions
-            {
-                {"Sistema ERP Cloud", "Desenvolvimento de sistema ERP na nuvem"},
-                {"App Mobile Banking", "Aplicativo mobile para serviços bancários"},
-                {"Plataforma E-commerce", "Plataforma completa de e-commerce"},
-                {"Sistema de BI", "Sistema de Business Intelligence"},
-                {"API Gateway", "Gateway centralizado para APIs"}
-            },
-            // HealthCare Plus
-            {
-                {"Sistema de Prontuário", "Sistema eletrônico de prontuário médico"},
-                {"App de Agendamento", "Aplicativo para agendamento de consultas"},
-                {"Telemedicina", "Plataforma de telemedicina"},
-                {"Gestão de Estoque", "Sistema de gestão de estoque hospitalar"},
-                {"Portal do Paciente", "Portal online para pacientes"}
-            },
-            // EduTech Brasil
-            {
-                {"Plataforma LMS", "Learning Management System"},
-                {"App Educacional", "Aplicativo educacional para crianças"},
-                {"Sistema de Avaliação", "Sistema de avaliação online"},
-                {"Biblioteca Digital", "Plataforma de biblioteca digital"},
-                {"Gamificação", "Sistema de gamificação educacional"}
-            },
-            // GreenEnergy
-            {
-                {"Monitoramento Solar", "Sistema de monitoramento de energia solar"},
-                {"Gestão de Usinas", "Sistema de gestão de usinas eólicas"},
-                {"App Consumo", "App para monitorar consumo energético"},
-                {"Dashboard Energia", "Dashboard de análise energética"},
-                {"IoT Sensores", "Sistema IoT para sensores de energia"}
-            },
-            // FoodDelivery Express
-            {
-                {"App Delivery", "Aplicativo de delivery"},
-                {"Sistema de Pedidos", "Sistema de gestão de pedidos"},
-                {"Rastreamento", "Sistema de rastreamento de entregas"},
-                {"App Restaurante", "App para restaurantes parceiros"},
-                {"Analytics", "Sistema de analytics de vendas"}
-            },
-            // FinanceHub
-            {
-                {"Sistema Bancário", "Sistema core bancário"},
-                {"App Investimentos", "App de investimentos"},
-                {"Fraude Detection", "Sistema de detecção de fraude"},
-                {"Open Banking", "Plataforma Open Banking"},
-                {"Fintech API", "API para integração fintech"}
-            },
-            // RetailMax
-            {
-                {"E-commerce B2C", "Plataforma e-commerce B2C"},
-                {"E-commerce B2B", "Plataforma e-commerce B2B"},
-                {"App Cliente", "Aplicativo para clientes"},
-                {"Gestão Estoque", "Sistema de gestão de estoque"},
-                {"Marketplace", "Plataforma marketplace"}
-            },
-            // Construction Pro
-            {
-                {"Gestão Obras", "Sistema de gestão de obras"},
-                {"App Campo", "Aplicativo para campo"},
-                {"Orçamentos", "Sistema de orçamentos"},
-                {"Controle Qualidade", "Sistema de controle de qualidade"},
-                {"Dashboard Projetos", "Dashboard de projetos"}
-            },
-            // MediaGroup
-            {
-                {"CMS", "Content Management System"},
-                {"Streaming", "Plataforma de streaming"},
-                {"Redes Sociais", "Plataforma de redes sociais"},
-                {"Analytics Mídia", "Sistema de analytics de mídia"},
-                {"App Notícias", "Aplicativo de notícias"}
-            },
-            // Logistics Corp
-            {
-                {"Rastreamento", "Sistema de rastreamento de cargas"},
-                {"Gestão Frotas", "Sistema de gestão de frotas"},
-                {"App Motorista", "Aplicativo para motoristas"},
-                {"Otimização Rotas", "Sistema de otimização de rotas"},
-                {"Warehouse", "Sistema de gestão de armazéns"}
+        for (Empresa empresa : empresas) {
+            // Verificar se já existem projetos para esta empresa
+            List<Projeto> projetosExistentes = projetoRepository.findByEmpresaId(empresa.getId());
+            if (!projetosExistentes.isEmpty()) {
+                return; // Já existem projetos para esta empresa
             }
-        };
-        
-        for (int i = 0; i < empresas.size(); i++) {
-            Empresa empresa = empresas.get(i);
-            String[][] projetos = projetosPorEmpresa[i];
-            
-            for (String[] projetoData : projetos) {
-                Projeto projeto = new Projeto();
-                projeto.setNome(projetoData[0]);
-                projeto.setDescricao(projetoData[1]);
-                projeto.setEmpresa(empresa);
-                projeto.setAtivo(true);
-                projeto = projetoRepository.save(projeto);
-                
-                // Criar 2 times para cada projeto
-                for (int t = 1; t <= 2; t++) {
-                    Time time = new Time();
-                    time.setNome("Time " + t + " - " + projeto.getNome());
-                    time.setDescricao("Time de desenvolvimento do projeto " + projeto.getNome());
-                    time.setProjeto(projeto);
-                    time.setAtivo(true);
-                    time = timeRepository.save(time);
-                    
-                    // Criar 2 sprints para cada time
-                    for (int s = 1; s <= 2; s++) {
-                        Sprint sprint = new Sprint();
-                        sprint.setNome("Sprint " + s + " - " + time.getNome());
-                        LocalDate inicio = LocalDate.of(2025, 9, 1).plusWeeks((s - 1) * 2);
-                        sprint.setDataInicio(inicio);
-                        sprint.setDataFim(inicio.plusWeeks(2).minusDays(1));
-                        sprint.setTime(time);
-                        sprint.setObjetivo("Objetivos da sprint " + s);
-                        sprint.setStatus(s == 1 ? Sprint.StatusSprint.EM_ANDAMENTO : Sprint.StatusSprint.PLANEJADA);
-                        sprintRepository.save(sprint);
+
+            // Criar projetos baseado no nome da empresa
+            if (empresa.getNome().contains("TechSolutions")) {
+                String[][] projetos = {
+                    {"Sistema ERP Cloud", "Desenvolvimento de sistema ERP na nuvem"},
+                    {"App Mobile Banking", "Aplicativo mobile para serviços bancários"},
+                    {"Plataforma E-commerce", "Plataforma completa de e-commerce"},
+                    {"Sistema de BI", "Sistema de Business Intelligence"},
+                    {"API Gateway", "Gateway centralizado para APIs"}
+                };
+
+                for (String[] projetoData : projetos) {
+                    // Verificar se projeto já existe para esta empresa
+                    boolean projetoExiste = projetosExistentes.stream()
+                        .anyMatch(p -> p.getNome().equals(projetoData[0]));
+
+                    if (!projetoExiste) {
+                        Projeto projeto = new Projeto();
+                        projeto.setNome(projetoData[0]);
+                        projeto.setDescricao(projetoData[1]);
+                        projeto.setEmpresa(empresa);
+                        projeto.setAtivo(true);
+                        projetoRepository.save(projeto);
                     }
                 }
             }
         }
     }
     
-    private void criarRegistrosPonto(List<Usuario> funcionarios) {
-        LocalDate inicio = LocalDate.of(2025, 9, 1);
-        LocalDate fim = LocalDate.of(2025, 11, 30);
-        
-        List<Projeto> projetos = projetoRepository.findAll();
-        
-        for (Usuario funcionario : funcionarios) {
-            LocalDate data = inicio;
-            while (!data.isAfter(fim)) {
-                // Pular finais de semana
-                if (data.getDayOfWeek().getValue() < 6) {
-                    // Criar registro de ponto
-                    LocalDateTime entrada = LocalDateTime.of(data, 
-                        java.time.LocalTime.of(8 + random.nextInt(2), random.nextInt(30)));
-                    LocalDateTime saida = entrada.plusHours(8).plusMinutes(random.nextInt(60));
-                    
-                    RegistroPonto registro = new RegistroPonto();
-                    registro.setFuncionario(funcionario);
-                    registro.setDataHoraEntrada(entrada);
-                    registro.setDataHoraSaida(saida);
-                    
-                    // Calcular horas trabalhadas
-                    long minutos = java.time.Duration.between(entrada, saida).toMinutes();
-                    registro.setHorasTrabalhadas(minutos / 60.0 + (minutos % 60) / 60.0);
-                    
-                    // Associar a um projeto aleatório da empresa do funcionário
-                    if (!projetos.isEmpty() && random.nextDouble() > 0.3) {
-                        registro.setProjeto(projetos.get(random.nextInt(projetos.size())));
-                    }
-                    
-                    registro.setTipo(RegistroPonto.TipoRegistro.NORMAL);
-                    registroPontoRepository.save(registro);
-                }
-                data = data.plusDays(1);
-            }
-        }
-    }
-    
-    private void criarSolicitacoes(List<Usuario> funcionarios) {
-        // Criar algumas solicitações de férias
-        for (int i = 0; i < 5; i++) {
-            Usuario funcionario = funcionarios.get(random.nextInt(funcionarios.size()));
-            Solicitacao solicitacao = new Solicitacao();
-            solicitacao.setFuncionario(funcionario);
-            solicitacao.setTipo(Solicitacao.TipoSolicitacao.FERIAS);
-            
-            LocalDate inicio = LocalDate.of(2025, 10, 1).plusDays(random.nextInt(30));
-            solicitacao.setDataInicio(inicio);
-            solicitacao.setDataFim(inicio.plusDays(5 + random.nextInt(10)));
-            solicitacao.setJustificativa("Solicitação de férias");
-            solicitacao.setDataSolicitacao(LocalDateTime.now().minusDays(random.nextInt(30)));
-            solicitacao.setStatus(random.nextBoolean() ? 
-                Solicitacao.StatusSolicitacao.APROVADA : Solicitacao.StatusSolicitacao.PENDENTE);
-            solicitacaoRepository.save(solicitacao);
-        }
-        
-        // Criar algumas solicitações de atestado
-        for (int i = 0; i < 8; i++) {
-            Usuario funcionario = funcionarios.get(random.nextInt(funcionarios.size()));
-            Solicitacao solicitacao = new Solicitacao();
-            solicitacao.setFuncionario(funcionario);
-            solicitacao.setTipo(Solicitacao.TipoSolicitacao.ATESTADO);
-            
-            LocalDate inicio = LocalDate.of(2025, 9, 1).plusDays(random.nextInt(90));
-            solicitacao.setDataInicio(inicio);
-            solicitacao.setDataFim(inicio.plusDays(1 + random.nextInt(3)));
-            solicitacao.setJustificativa("Atestado médico");
-            solicitacao.setDataSolicitacao(LocalDateTime.now().minusDays(random.nextInt(30)));
-            solicitacao.setStatus(random.nextBoolean() ? 
-                Solicitacao.StatusSolicitacao.APROVADA : Solicitacao.StatusSolicitacao.PENDENTE);
-            solicitacaoRepository.save(solicitacao);
-        }
-    }
+
 }

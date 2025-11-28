@@ -1,7 +1,10 @@
 package com.zenotime.controller;
 
+import com.zenotime.dto.RegistroHorasRequest;
 import com.zenotime.dto.RegistroPontoRequest;
 import com.zenotime.dto.RegistroPontoResponse;
+import com.zenotime.entity.Usuario;
+import com.zenotime.repository.UsuarioRepository;
 import com.zenotime.service.RegistroPontoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,12 +22,17 @@ public class RegistroPontoController {
     
     @Autowired
     private RegistroPontoService registroPontoService;
-    
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     private Long getCurrentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
-        // Em produção, buscar ID do usuário pelo email
-        return 1L; // Placeholder - implementar busca real
+        // Busca o usuário logado
+        Usuario usuario = usuarioRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        return usuario.getId();
     }
     
     @GetMapping
@@ -43,6 +51,12 @@ public class RegistroPontoController {
     public ResponseEntity<RegistroPontoResponse> registrarSaida(@PathVariable Long registroId) {
         Long funcionarioId = getCurrentUserId();
         return ResponseEntity.ok(registroPontoService.registrarSaida(funcionarioId, registroId));
+    }
+
+    @PostMapping("/registrar-horas")
+    public ResponseEntity<RegistroPontoResponse> registrarHoras(@Valid @RequestBody RegistroHorasRequest request) {
+        Long funcionarioId = getCurrentUserId();
+        return ResponseEntity.ok(registroPontoService.registrarHoras(funcionarioId, request));
     }
 }
 
